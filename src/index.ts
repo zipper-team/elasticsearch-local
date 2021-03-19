@@ -1,5 +1,5 @@
 import getDebug from 'debug';
-import {execSync} from 'child_process';
+import {execSync, exec} from 'child_process';
 import {promisify} from 'util';
 import {platform} from 'os';
 import download from 'download-tarball';
@@ -73,9 +73,21 @@ export async function start(options: StartESOptions): Promise<void> {
 
   debug('Starting ES');
 
-  await execSync(
+  exec(
     `${esBinaryFilepath} -d -p ${FILEPATH_PREFIX}/elasticsearch-${esVersion}/es-pid -Ecluster.name=${clusterName} -Enode.name=${nodeName} -Ehttp.port=${port}`
   );
+
+  debug('Waiting for ES to start');
+  for (let index = 0; index < 100; index++) {
+    try {
+      const statusCode = execSync(`curl -o /dev/null -s -w "%{http_code}\n" "${esURL}_cluster/health"`);
+      if(parseInt(statusCode.toString('utf8')) == 200) break;   
+    } catch (err){
+      debug(`[${index+1}/100] Not ready yet, waiting 5s`);
+    }
+    await new Promise(resolve => setTimeout(resolve, 5000));  
+  }
+  debug('ES is running');
   debug('ES is running');
 
   await Promise.all(

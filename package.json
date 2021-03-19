@@ -1,5 +1,5 @@
 {
-  "name": "@shelf/elasticsearch-local",
+  "name": "zipper-elasticsearch-local",
   "version": "1.0.0",
   "description": "Run 6+ version of ElasticSearch locally",
   "keywords": [
