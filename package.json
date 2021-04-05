@@ -1,6 +1,6 @@
 {
   "name": "zipper-elasticsearch-local",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Run 6+ version of ElasticSearch locally",
   "keywords": [
     "elastic",

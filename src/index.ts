@@ -61,17 +61,28 @@ export async function start(options: StartESOptions): Promise<void> {
     debug('ES already downloaded');
   }
 
+  debug(`ML Disabled: ${disableML}`);
   if (disableML) {
+    debug(
+      `[ "$(awk '/./{line=$0} END{print line}' ${ymlConfig})" == "xpack.ml.enabled: false" ] || echo 'xpack.ml.enabled: false' >> ${ymlConfig}`
+    );
     execSync(
       `[ "$(awk '/./{line=$0} END{print line}' ${ymlConfig})" == "xpack.ml.enabled: false" ] || echo 'xpack.ml.enabled: false' >> ${ymlConfig}`
     ); // disable ML feature as it not ships with bundled installer
   } else if (!disableML && versionAlreadyDownloaded) {
+    debug(
+      `[ "$(awk '/./{line=$0} END{print line}' ${ymlConfig})" == "xpack.ml.enabled: false" ] && ${getSedCommand()} ${ymlConfig}`
+    );
     execSync(
       `[ "$(awk '/./{line=$0} END{print line}' ${ymlConfig})" == "xpack.ml.enabled: false" ] && ${getSedCommand()} ${ymlConfig}`
     );
   }
 
   debug('Starting ES');
+
+  debug(
+    `${esBinaryFilepath} -d -p ${FILEPATH_PREFIX}/elasticsearch-${esVersion}/es-pid -Ecluster.name=${clusterName} -Enode.name=${nodeName} -Ehttp.port=${port}`
+  );
 
   exec(
     `${esBinaryFilepath} -d -p ${FILEPATH_PREFIX}/elasticsearch-${esVersion}/es-pid -Ecluster.name=${clusterName} -Enode.name=${nodeName} -Ehttp.port=${port}`
