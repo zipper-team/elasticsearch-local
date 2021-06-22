@@ -1,5 +1,5 @@
 import getDebug from 'debug';
-import {execSync, exec} from 'child_process';
+import {exec, execSync} from 'child_process';
 import {promisify} from 'util';
 import {platform} from 'os';
 import download from 'download-tarball';
@@ -32,7 +32,7 @@ export async function start(options: StartESOptions): Promise<void> {
     nodeName = 'es-local',
     port = 9200,
     indexes = [],
-    disableML = true
+    disableML = true,
   } = options;
 
   const esURL = `http://localhost:${port}/`;
@@ -64,10 +64,10 @@ export async function start(options: StartESOptions): Promise<void> {
   debug(`ML Disabled: ${disableML}`);
   if (disableML) {
     debug(
-      `[ "$(awk '/./{line=$0} END{print line}' ${ymlConfig})" == "xpack.ml.enabled: false" ] || echo 'xpack.ml.enabled: false' >> ${ymlConfig}`
+      `[ "$(awk '/./{line=$0} END{print line}' ${ymlConfig})" == "xpack.ml.enabled: false" ] || echo 'xpack.ml.enabled: false' > ${ymlConfig}`
     );
     execSync(
-      `[ "$(awk '/./{line=$0} END{print line}' ${ymlConfig})" == "xpack.ml.enabled: false" ] || echo 'xpack.ml.enabled: false' >> ${ymlConfig}`
+      `[ "$(awk '/./{line=$0} END{print line}' ${ymlConfig})" == "xpack.ml.enabled: false" ] || echo 'xpack.ml.enabled: false' > ${ymlConfig}`
     ); // disable ML feature as it not ships with bundled installer
   } else if (!disableML && versionAlreadyDownloaded) {
     debug(
@@ -91,12 +91,15 @@ export async function start(options: StartESOptions): Promise<void> {
   debug('Waiting for ES to start');
   for (let index = 0; index < 100; index++) {
     try {
-      const statusCode = execSync(`curl -o /dev/null -s -w "%{http_code}\n" "${esURL}_cluster/health"`);
-      if(parseInt(statusCode.toString('utf8')) == 200) break;   
-    } catch (err){
-      debug(`[${index+1}/100] Not ready yet, waiting 5s`);
+      const statusCode = execSync(
+        `curl -o /dev/null -s -w "%{http_code}\n" "${esURL}_cluster/health"`
+      );
+
+      if (parseInt(statusCode.toString('utf8')) == 200) break;
+    } catch (err) {
+      debug(`[${index + 1}/100] Not ready yet, waiting 5s`);
     }
-    await new Promise(resolve => setTimeout(resolve, 5000));  
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   }
   debug('ES is running');
   debug('ES is running');
